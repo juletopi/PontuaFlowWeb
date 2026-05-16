@@ -18,6 +18,9 @@
     <a href="https://getbootstrap.com/">
         <img src="https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap-badge">
     </a>
+    <a href="https://jquery.com/">
+        <img src="https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white" alt="jQuery-badge">
+  </a>
 </div>
 
 <br>
@@ -37,6 +40,24 @@ O **PontuaFlow Web** é a interface web do sistema PontuaFlow. Serve como UI e c
 
 O backend de persistência e API pode ser a **[PontuaFlow API](https://github.com/juletopi/PontuaFlowAPI)** (.NET) ou outra API compatível; o frontend consome essa API através da variável `API_URL` presente no arquivo de ambiente.
 
+### Tecnologias utilizadas
+
+<a href="https://nodejs.org/">
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node-badge">
+</a>
+<a href="https://nestjs.com/">
+  <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="Nest-badge">
+</a>
+<a href="https://ejs.co/">
+  <img src="https://img.shields.io/badge/EJS-2B2B2B?style=for-the-badge&logo=ejs&logoColor=white" alt="EJS-badge">
+</a>
+<a href="https://getbootstrap.com/">
+  <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap-badge">
+</a>
+<a href="https://jquery.com/">
+  <img src="https://img.shields.io/badge/jQuery-3.6-0769AD?style=for-the-badge&logo=jquery&logoColor=white" alt="jQuery-badge">
+</a>
+
 ### Principais funcionalidades
 
 - Listagem e criação de Projetos
@@ -55,10 +76,10 @@ O backend de persistência e API pode ser a **[PontuaFlow API](https://github.co
 > Certifique-se de ter os seguintes requisitos antes de iniciar:
 >
 > <a href="https://nodejs.org/">
->    <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node-badge">
+>    <img src="https://img.shields.io/badge/Node.js-20%2B-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node-badge">
 > </a>
 > <a href="https://www.npmjs.com/">
->    <img src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm-badge">
+>    <img src="https://img.shields.io/badge/npm-10%2B-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm-badge">
 > </a>
 
 1. Instale dependências
