@@ -124,10 +124,9 @@ fetch(`${API_URL}/devs`, {
 });
 ```
 
-### Observações
-
-- Habilite CORS na API para permitir requisições do `http://localhost:3000` (se API estiver em domínio/porta diferentes).
-- O layout centraliza header, navbar, título e breadcrumb — as páginas só devem prover o corpo do conteúdo.
+> [!IMPORTANT]
+> - Habilite CORS na API para permitir requisições do `http://localhost:3000` (se API estiver em domínio/porta diferentes).
+> - O layout centraliza header, navbar, título e breadcrumb — as páginas só devem prover o corpo do conteúdo.
 
 <div align="left">
   <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
