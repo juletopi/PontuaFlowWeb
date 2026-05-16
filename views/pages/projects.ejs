@@ -1,0 +1,90 @@
+<div class="container-lg">
+  <div class="row align-items-center mb-4">
+    <div class="col">
+      <!-- Título renderizado pelo layout -->
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#projectModal">
+        <i class="bi bi-plus-circle"></i> Novo Projeto
+      </button>
+    </div>
+  </div>
+
+  <% if (projects && projects.length > 0) { %>
+    <div class="row g-4">
+      <% projects.forEach(project => { %>
+        <div class="col-md-6 col-lg-4">
+          <div class="card project-card h-100 cursor-pointer" onclick="selectProject('<%= project.id %>')">
+            <div class="card-img-top project-image" style="background-color: var(--primary-color);">
+              <% if (project.photo) { %>
+                <img src="/images/<%= project.photo %>" alt="<%= project.name %>">
+              <% } else { %>
+                <div class="d-flex align-items-center justify-content-center h-100">
+                  <i class="bi bi-folder-fill text-white" style="font-size: 3rem;"></i>
+                </div>
+              <% } %>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title"><%= project.name %></h5>
+              <p class="card-text text-muted"><%= project.description || 'Sem descrição' %></p>
+            </div>
+            <div class="card-footer bg-transparent border-top">
+              <small class="text-muted">
+                <i class="bi bi-calendar-event"></i> Criado em <%= new Date(project.createdAt).toLocaleDateString('pt-BR') %>
+              </small>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="alert alert-info" role="alert">
+      <i class="bi bi-info-circle"></i> Nenhum projeto cadastrado ainda. <a href="#" data-bs-toggle="modal" data-bs-target="#projectModal">Crie o seu primeiro projeto!</a>
+    </div>
+  <% } %>
+</div>
+
+<!-- Modal novo projeto -->
+<div class="modal fade" id="projectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo Projeto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="projectForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="projectName" class="form-label">Nome do Projeto</label>
+            <input type="text" class="form-control" id="projectName" required>
+          </div>
+          <div class="mb-3">
+            <label for="projectDescription" class="form-label">Descrição (opcional)</label>
+            <textarea class="form-control" id="projectDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="projectPhoto" class="form-label">Foto/Avatar (opcional)</label>
+            <input type="file" class="form-control" id="projectPhoto" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Projeto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $('#projectForm').on('submit', function(e) {
+      e.preventDefault();
+      alert('Funcionalidade em desenvolvimento');
+    });
+  });
+
+  const selectProject = (projectId) => {
+    window.location.href = `/project/${projectId}`;
+  };
+</script>

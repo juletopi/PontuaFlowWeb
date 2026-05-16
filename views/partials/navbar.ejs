@@ -1,0 +1,70 @@
+<nav class="navbar navbar-tabs bg-light border-bottom">
+  <div class="container-lg">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active" href="/home" id="resume-tab" role="tab">
+          <i class="bi bi-speedometer2"></i> Resumo
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" href="/devs" id="devs-tab" role="tab">
+          <i class="bi bi-people"></i> Devs
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" href="/tasks" id="tasks-tab" role="tab">
+          <i class="bi bi-list-check"></i> Tarefas
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" href="/metrics" id="metrics-tab" role="tab">
+          <i class="bi bi-bar-chart"></i> Métricas
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" href="/settings" id="settings-tab" role="tab">
+          <i class="bi bi-gear"></i> Configurações
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .navbar-tabs {
+    background-color: #fff;
+  }
+
+  .dark-mode .navbar-tabs {
+    background-color: #2d3748;
+    border-bottom-color: #374151;
+  }
+
+  .nav-tabs .nav-link {
+    color: #6b7280;
+    border: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .nav-tabs .nav-link:hover {
+    color: var(--primary-color);
+  }
+
+  .nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background-color: transparent;
+  }
+
+  .dark-mode .nav-tabs .nav-link {
+    color: #9ca3af;
+  }
+
+  .dark-mode .nav-tabs .nav-link:hover {
+    color: var(--primary-color);
+  }
+
+  .nav-link i {
+    margin-right: 0.5rem;
+  }
+</style>

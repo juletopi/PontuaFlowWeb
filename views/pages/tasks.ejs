@@ -1,0 +1,148 @@
+<% var inProject = true; var backUrl = '/'; %>
+
+<div class="container-lg">
+  <div class="row align-items-center mb-4">
+    <div class="col">
+      <!-- Título renderizado pelo layout -->
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <i class="bi bi-plus-circle"></i> Nova Tarefa
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <select class="form-select" id="filterDev">
+        <option value="">Todos os Devs</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" id="filterWeek">
+        <option value="">Todas as Semanas</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" id="filterScore">
+        <option value="">Todas as Pontuações</option>
+        <option value="0">0 pontos</option>
+        <option value="2">2 pontos</option>
+        <option value="3">3 pontos</option>
+        <option value="5">5 pontos</option>
+        <option value="8">8 pontos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Tarefa</th>
+            <th>Dev</th>
+            <th>Semana</th>
+            <th>Pontuação</th>
+            <th>Data Início</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="bi bi-inbox"></i> Nenhuma tarefa cadastrada
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nova tarefa -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nova Tarefa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="taskForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="taskName" class="form-label">Nome da Tarefa</label>
+            <input type="text" class="form-control" id="taskName" required>
+          </div>
+          <div class="mb-3">
+            <label for="taskDescription" class="form-label">Descrição (opcional)</label>
+            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="taskDev" class="form-label">Desenvolvedor</label>
+            <select class="form-select" id="taskDev" required>
+              <option value="">Selecione um dev</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="taskWeek" class="form-label">Semana</label>
+            <select class="form-select" id="taskWeek" required>
+              <option value="">Selecione uma semana</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="taskScore" class="form-label">Pontuação</label>
+            <select class="form-select" id="taskScore" required>
+              <option value="">Selecione</option>
+              <option value="0">0 pontos</option>
+              <option value="2">2 pontos</option>
+              <option value="3">3 pontos</option>
+              <option value="5">5 pontos</option>
+              <option value="8">8 pontos</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="taskStartDate" class="form-label">Data de Início</label>
+            <input type="date" class="form-control" id="taskStartDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="taskEndDate" class="form-label">Data de Fim (opcional)</label>
+            <input type="date" class="form-control" id="taskEndDate">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .table {
+    margin-bottom: 0;
+  }
+
+  .dark-mode .table-light {
+    background-color: #374151;
+  }
+
+  .dark-mode .table {
+    color: #f3f4f6;
+    border-color: #374151;
+  }
+
+  .dark-mode .table tbody tr:hover {
+    background-color: #2d3748;
+  }
+</style>
+
+<script>
+  $(function() {
+    $('#taskForm').on('submit', function(e) {
+      e.preventDefault();
+      alert('Funcionalidade em desenvolvimento');
+    });
+  });
+</script>

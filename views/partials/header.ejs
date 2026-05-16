@@ -1,0 +1,43 @@
+<header class="bg-white dark-mode-bg shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-lg">
+      <a class="navbar-brand fw-bold text-primary" href="/">
+        <i class="bi bi-speedometer2"></i> PontuaFlow
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="ms-auto d-flex align-items-center gap-3">
+          <button class="btn btn-sm btn-outline-secondary" id="darkModeToggle" onclick="toggleDarkMode()">
+            <i class="bi bi-moon-stars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .navbar {
+    padding: 1rem 0;
+  }
+
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
+
+  .dark-mode-bg {
+    background-color: #1f2937 !important;
+  }
+
+  .dark-mode .navbar {
+    background-color: #1f2937;
+  }
+
+  .dark-mode .navbar-brand {
+    color: var(--primary-color);
+  }
+</style>

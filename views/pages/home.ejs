@@ -1,0 +1,124 @@
+<% var inProject = true; var backUrl = '/'; %>
+
+<div class="container-lg">
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="card-text text-muted small">Total de Devs</p>
+              <h3 class="h2 mb-0">0</h3>
+            </div>
+            <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="card-text text-muted small">Total de Tarefas</p>
+              <h3 class="h2 mb-0">0</h3>
+            </div>
+            <i class="bi bi-list-check text-success" style="font-size: 2rem;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="card-text text-muted small">Total de Pontos</p>
+              <h3 class="h2 mb-0">0</h3>
+            </div>
+            <i class="bi bi-star-fill text-warning" style="font-size: 2rem;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="card-text text-muted small">Aproveitamento Médio</p>
+              <h3 class="h2 mb-0">0%</h3>
+            </div>
+            <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="resume" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Conteúdo do resumo será carregado aqui...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="devs" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Aba de desenvolvedores será carregada aqui...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="tasks" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Aba de tarefas será carregada aqui...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="metrics" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Aba de métricas será carregada aqui...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="settings" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Aba de configurações será carregada aqui...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+  }
+
+  .dark-mode .card {
+    background-color: #2d3748;
+    border-color: #374151;
+  }
+
+  .dark-mode .card-text {
+    color: #9ca3af !important;
+  }
+
+  .tab-content {
+    margin-top: 1.5rem;
+  }
+</style>

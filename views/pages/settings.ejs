@@ -1,0 +1,124 @@
+<% var inProject = true; var backUrl = '/'; %>
+
+<div class="container-lg">
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Aparência</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Tema</label>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" checked>
+              <label class="form-check-label" for="themeLight">
+                <i class="bi bi-sun"></i> Claro
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark">
+              <label class="form-check-label" for="themeDark">
+                <i class="bi bi-moon-stars"></i> Escuro
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="theme" id="themeAuto" value="auto" checked>
+              <label class="form-check-label" for="themeAuto">
+                <i class="bi bi-circle-half"></i> Automático
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="colorScheme" class="form-label">Esquema de Cores</label>
+            <select class="form-select" id="colorScheme">
+              <option value="default">Padrão (Azul)</option>
+              <option value="green">Verde</option>
+              <option value="purple">Roxo</option>
+              <option value="orange">Laranja</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Sobre</h5>
+        </div>
+        <div class="card-body">
+          <p>
+            <strong>PontuaFlow Web</strong><br>
+            v0.1.0
+          </p>
+          <p class="text-muted small">
+            Sistema de gestão e pontuação de desenvolvedores em projetos.
+          </p>
+          <hr>
+          <p class="text-muted small">
+            <i class="bi bi-info-circle"></i>
+            Desenvolvido com NestJS, TypeScript e Bootstrap.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card-header {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.25rem;
+  }
+
+  .dark-mode .card-header {
+    background-color: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  .dark-mode .card {
+    background-color: #2d3748;
+    border-color: #374151;
+  }
+
+  .form-check-label {
+    cursor: pointer;
+    margin-left: 0.25rem;
+  }
+</style>
+
+<script>
+  $(function() {
+    $('input[name="theme"]').on('change', function() {
+      const theme = $(this).val();
+      localStorage.setItem('theme', theme);
+      updateTheme(theme);
+    });
+
+    const savedTheme = localStorage.getItem('theme') || 'auto';
+    $(`#theme${savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1)}`).prop('checked', true);
+
+    $('#colorScheme').on('change', function() {
+      const scheme = $(this).val();
+      localStorage.setItem('colorScheme', scheme);
+    });
+  });
+
+  const updateTheme = (theme) => {
+    if (theme === 'auto') {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    } else if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
+</script>
