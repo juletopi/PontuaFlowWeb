@@ -4,7 +4,7 @@
   "description": "Web application for developer project management and scoring",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
