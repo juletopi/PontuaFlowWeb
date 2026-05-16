@@ -40,6 +40,14 @@ O **PontuaFlow Web** é a interface web do sistema PontuaFlow. Serve como UI e c
 
 O backend de persistência e API pode ser a **[PontuaFlow API](https://github.com/juletopi/PontuaFlowAPI)** (.NET) ou outra API compatível; o frontend consome essa API através da variável `API_URL` presente no arquivo de ambiente.
 
+### Principais funcionalidades
+
+- Listagem e criação de Projetos
+- Cadastro de Desenvolvedores (Devs)
+- Registro de Tarefas por Semana
+- Visualização de Métricas e Ranking por projeto
+- Modal para criação rápida e navegação centralizada via layout
+
 ### Tecnologias utilizadas
 
 <a href="https://nodejs.org/">
@@ -58,19 +66,13 @@ O backend de persistência e API pode ser a **[PontuaFlow API](https://github.co
   <img src="https://img.shields.io/badge/jQuery-3.6-0769AD?style=for-the-badge&logo=jquery&logoColor=white" alt="jQuery-badge">
 </a>
 
-### Principais funcionalidades
-
-- Listagem e criação de Projetos
-- Cadastro de Desenvolvedores (Devs)
-- Registro de Tarefas por Semana
-- Visualização de Métricas e Ranking por projeto
-- Modal para criação rápida e navegação centralizada via layout
-
 <div align="left">
   <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
 </div>
 
 ## Instalação
+
+### Iniciando o projeto
 
 > [!IMPORTANT]
 > Certifique-se de ter os seguintes requisitos antes de iniciar:
@@ -130,6 +132,8 @@ fetch(`${API_URL}/devs`, {
 <div align="left">
   <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
 </div>
+
+<br>
 
 ## Autor
 
