@@ -4,10 +4,12 @@ import { Controller, Get, Render } from '@nestjs/common';
 export class AppController {
   @Get()
   @Render('pages/projects')
-  getProjects() {
+  async getProjects() {
+    const projects = await this.loadProjects();
+
     return {
       title: 'Projetos - PontuaFlow',
-      projects: [],
+      projects,
     };
   }
 
@@ -64,5 +66,38 @@ export class AppController {
       backUrl: '/home',
       inProject: true,
     };
+  }
+
+  private async loadProjects() {
+    const apiUrl = (process.env.API_URL || '').trim().replace(/\/$/, '');
+
+    if (!apiUrl) {
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/projects`);
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data: any = await response.json();
+      const source = Array.isArray(data) ? data : data.data ?? data.projects ?? [];
+
+      if (!Array.isArray(source)) {
+        return [];
+      }
+
+      return source.map((project: any) => ({
+        id: project.id ?? project.Id,
+        name: project.name ?? project.Nome ?? project.nome ?? 'Sem nome',
+        description: project.description ?? project.Descricao ?? project.descricao ?? '',
+        photo: project.photo ?? project.Foto ?? project.foto ?? '',
+        createdAt: project.createdAt ?? project.CreatedAt ?? project.created_at ?? new Date().toISOString(),
+      }));
+    } catch {
+      return [];
+    }
   }
 }
