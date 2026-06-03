@@ -1,4 +1,4 @@
-import { Controller, Get, Render } from '@nestjs/common';
+import { Controller, Get, Param, Render } from '@nestjs/common';
 
 @Controller()
 export class AppController {
@@ -21,6 +21,18 @@ export class AppController {
       breadcrumb: 'Resumo geral do projeto',
       backUrl: '/',
       inProject: true,
+    };
+  }
+
+  @Get('project/:id')
+  @Render('pages/home')
+  getProjectHome(@Param('id') id: string) {
+    return {
+      title: `Visão do Projeto #${id} - PontuaFlow`,
+      breadcrumb: `Resumo geral do projeto #${id}`,
+      backUrl: '/',
+      inProject: true,
+      projectId: id,
     };
   }
 
@@ -76,13 +88,23 @@ export class AppController {
     }
 
     try {
-      const response = await fetch(`${apiUrl}/projects`);
+      const endpoints = ['/api/Projects', '/api/projects', '/projects'];
+      let data: any = null;
 
-      if (!response.ok) {
+      for (const endpoint of endpoints) {
+        const response = await fetch(`${apiUrl}${endpoint}`);
+        if (!response.ok) {
+          continue;
+        }
+
+        data = await response.json();
+        break;
+      }
+
+      if (!data) {
         return [];
       }
 
-      const data: any = await response.json();
       const source = Array.isArray(data) ? data : data.data ?? data.projects ?? [];
 
       if (!Array.isArray(source)) {
