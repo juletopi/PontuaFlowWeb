@@ -90,20 +90,21 @@ O backend de persistência e API pode ser a **[PontuaFlow API](https://github.co
 npm install
 ```
 
-2. Crie um arquivo `.env` baseado em `.env.example` e configure `API_URL` apontando para a sua API (ex: `http://localhost:8080/api`).
+2. Crie um arquivo `.env` baseado em `.env.example` e configure `API_URL` apontando para a sua API (ex: `http://localhost:5003`).
 
 3. Execute em modo de desenvolvimento
 
 ```bash
 npx ts-node src/main.ts
-# ou
-npm run start:dev
+# ou 
+npm start
 ```
 
-O servidor ficará disponível em `http://localhost:3000` por padrão.
+> [!NOTE]
+> O comando `npm start` foi modificado para usar o mesmo fluxo de `npx ts-node src/main.ts`, abrindo o projeto em modo local por padrão, em `http://localhost:3000`.
 
 <div align="left">
-  <h6><a href="#pontuadev"> Voltar para o início ↺</a></h6>
+  <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
 </div>
 
 ## Guia de Integração
@@ -111,7 +112,7 @@ O servidor ficará disponível em `http://localhost:3000` por padrão.
 O frontend comunica-se com a API através da variável `API_URL` (exposta no servidor via variáveis de ambiente para uso em scripts). Fluxo típico:
 
 1. Subir a **[PontuaFlow API](https://github.com/juletopi/PontuaFlowAPI)** (ex: .NET 8) ou sua implementação preferida.
-2. Ajustar `API_URL` em `.env` para apontar para a API (ex: `API_URL=http://localhost:8080/api`).
+2. Ajustar `API_URL` em `.env` para apontar para a API (ex: `API_URL=http://localhost:5003`).
 3. Formular chamadas `fetch`/`axios` do frontend para `API_URL` nos pontos necessários (criar projetos, devs, tarefas, etc.).
 
 Exemplo com fetch:
@@ -127,6 +128,7 @@ fetch(`${API_URL}/devs`, {
 > [!IMPORTANT]
 > - Habilite CORS na API para permitir requisições do `http://localhost:3000` (se API estiver em domínio/porta diferentes).
 > - O layout centraliza header, navbar, título e breadcrumb — as páginas só devem prover o corpo do conteúdo.
+> - Se a listagem inicial não aparecer, valide o endpoint `GET /projects` da API em `http://localhost:5003/projects`.
 
 <div align="left">
   <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
