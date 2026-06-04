@@ -1,4 +1,9 @@
-<% var inProject = true; var backUrl = '/'; %>
+<%
+  const summaryData = typeof summary !== 'undefined' && summary
+    ? summary
+    : { totalDevs: 0, totalTasks: 0, totalPoints: 0, averagePerformance: 0 };
+  const rankingData = Array.isArray(ranking) ? ranking : [];
+%>
 
 <div class="container-lg">
 
@@ -7,7 +12,7 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Total de Pontos</h5>
-          <h3 class="h1 text-primary">0</h3>
+          <h3 class="h1 text-primary"><%= summaryData.totalPoints || 0 %></h3>
           <p class="text-muted small">Soma de todas as pontuações</p>
         </div>
       </div>
@@ -16,7 +21,7 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Aproveitamento Geral</h5>
-          <h3 class="h1 text-success">0%</h3>
+          <h3 class="h1 text-success"><%= Math.round(summaryData.averagePerformance || 0) %>%</h3>
           <p class="text-muted small">Média de aproveitamento dos devs</p>
         </div>
       </div>
@@ -39,11 +44,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-              <i class="bi bi-inbox"></i> Nenhum desenvolvedor para exibir
-            </td>
-          </tr>
+          <% if (rankingData.length > 0) { %>
+            <% rankingData.forEach((item, index) => { %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td><%= item.name %></td>
+                <td><%= item.role || '-' %></td>
+                <td><%= item.totalPoints || 0 %></td>
+                <td><%= Math.round(item.performance || 0) %>%</td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-inbox"></i> Nenhum desenvolvedor para exibir
+              </td>
+            </tr>
+          <% } %>
         </tbody>
       </table>
     </div>

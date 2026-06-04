@@ -1,4 +1,9 @@
-<% var inProject = true; var backUrl = '/'; %>
+<%
+  const currentProject = typeof project !== 'undefined' ? project : null;
+  const summaryData = typeof summary !== 'undefined' && summary
+    ? summary
+    : { totalDevs: 0, totalTasks: 0, totalPoints: 0, averagePerformance: 0 };
+%>
 
 <div class="container-lg">
 
@@ -6,13 +11,37 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-header">
+          <h5 class="mb-0">Projeto</h5>
+        </div>
+        <div class="card-body">
+          <% if (currentProject) { %>
+            <p class="text-muted small mb-2">Projeto atual</p>
+            <h6 class="mb-3"><%= currentProject.name %></h6>
+            <p class="text-muted small"><%= currentProject.description || 'Sem descrição cadastrada.' %></p>
+            <hr>
+          <% } %>
+
+          <p class="text-muted small mb-2">Resumo da integração</p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><strong>Devs:</strong> <%= summaryData.totalDevs || 0 %></li>
+            <li class="mb-2"><strong>Tarefas:</strong> <%= summaryData.totalTasks || 0 %></li>
+            <li class="mb-2"><strong>Pontos:</strong> <%= summaryData.totalPoints || 0 %></li>
+            <li><strong>Aproveitamento médio:</strong> <%= Math.round(summaryData.averagePerformance || 0) %>%</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
           <h5 class="mb-0">Aparência</h5>
         </div>
         <div class="card-body">
           <div class="mb-3">
             <label class="form-label">Tema</label>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" checked>
+              <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light">
               <label class="form-check-label" for="themeLight">
                 <i class="bi bi-sun"></i> Claro
               </label>
@@ -24,7 +53,7 @@
               </label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="theme" id="themeAuto" value="auto" checked>
+              <input class="form-check-input" type="radio" name="theme" id="themeAuto" value="auto">
               <label class="form-check-label" for="themeAuto">
                 <i class="bi bi-circle-half"></i> Automático
               </label>
@@ -42,9 +71,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="col-md-6">
       <div class="card">
         <div class="card-header">
           <h5 class="mb-0">Sobre</h5>
@@ -60,7 +86,10 @@
           <hr>
           <p class="text-muted small">
             <i class="bi bi-info-circle"></i>
-            Desenvolvido com NestJS, TypeScript e Bootstrap.
+            Desenvolvido com NestJS, TypeScript, EJS e Bootstrap.
+          </p>
+          <p class="text-muted small mb-0">
+            As abas acima usam o contexto do projeto selecionado para manter a navegação e as operações de criação vinculadas à API.
           </p>
         </div>
       </div>
@@ -93,19 +122,33 @@
 
 <script>
   $(function() {
+    const applySavedTheme = () => {
+      const savedTheme = localStorage.getItem('theme') || 'auto';
+      const themeId = `theme${savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1)}`;
+
+      $(`input[name="theme"]`).prop('checked', false);
+      $(`#${themeId}`).prop('checked', true);
+      updateTheme(savedTheme);
+
+      const savedColorScheme = localStorage.getItem('colorScheme');
+
+      if (savedColorScheme) {
+        $('#colorScheme').val(savedColorScheme);
+      }
+    };
+
     $('input[name="theme"]').on('change', function() {
       const theme = $(this).val();
       localStorage.setItem('theme', theme);
       updateTheme(theme);
     });
 
-    const savedTheme = localStorage.getItem('theme') || 'auto';
-    $(`#theme${savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1)}`).prop('checked', true);
-
     $('#colorScheme').on('change', function() {
       const scheme = $(this).val();
       localStorage.setItem('colorScheme', scheme);
     });
+
+    applySavedTheme();
   });
 
   const updateTheme = (theme) => {

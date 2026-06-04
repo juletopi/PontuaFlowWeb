@@ -1,9 +1,16 @@
-<% var inProject = true; var backUrl = '/'; %>
+<%
+  const tasksData = Array.isArray(tasks) ? tasks : [];
+  const devsData = Array.isArray(devs) ? devs : [];
+  const weeksData = Array.isArray(weeks) ? weeks : [];
+  const currentProjectId = typeof projectId !== 'undefined' && projectId ? projectId : '';
+%>
 
 <div class="container-lg">
   <div class="row align-items-center mb-4">
     <div class="col">
-      <!-- Título renderizado pelo layout -->
+      <% if (!currentProjectId) { %>
+        <div class="alert alert-warning mb-0">Selecione um projeto para criar tarefas vinculadas a devs e semanas.</div>
+      <% } %>
     </div>
     <div class="col-auto">
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
@@ -16,11 +23,17 @@
     <div class="col-md-4">
       <select class="form-select" id="filterDev">
         <option value="">Todos os Devs</option>
+        <% devsData.forEach(dev => { %>
+          <option value="<%= dev.id %>"><%= dev.name %></option>
+        <% }) %>
       </select>
     </div>
     <div class="col-md-4">
       <select class="form-select" id="filterWeek">
         <option value="">Todas as Semanas</option>
+        <% weeksData.forEach(week => { %>
+          <option value="<%= week.id %>">Semana <%= week.number %></option>
+        <% }) %>
       </select>
     </div>
     <div class="col-md-4">
@@ -48,12 +61,32 @@
             <th>Ações</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td colspan="6" class="text-center text-muted py-4">
-              <i class="bi bi-inbox"></i> Nenhuma tarefa cadastrada
-            </td>
-          </tr>
+        <tbody id="tasksTableBody">
+          <% if (tasksData.length > 0) { %>
+            <% tasksData.forEach(task => { %>
+              <tr data-dev-id="<%= task.devId || '' %>" data-week-id="<%= task.weekId || '' %>" data-points="<%= task.points || 0 %>">
+                <td>
+                  <strong><%= task.title %></strong>
+                  <% if (task.description) { %>
+                    <div class="text-muted small"><%= task.description %></div>
+                  <% } %>
+                </td>
+                <td><%= task.devName || '-' %></td>
+                <td><%= task.weekNumber || '-' %></td>
+                <td><%= task.points || 0 %></td>
+                <td><%= task.startDate ? new Date(task.startDate).toLocaleDateString('pt-BR') : '-' %></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Editar</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr class="empty-row">
+              <td colspan="6" class="text-center text-muted py-4">
+                <i class="bi bi-inbox"></i> Nenhuma tarefa cadastrada
+              </td>
+            </tr>
+          <% } %>
         </tbody>
       </table>
     </div>
@@ -82,12 +115,18 @@
             <label for="taskDev" class="form-label">Desenvolvedor</label>
             <select class="form-select" id="taskDev" required>
               <option value="">Selecione um dev</option>
+              <% devsData.forEach(dev => { %>
+                <option value="<%= dev.id %>"><%= dev.name %></option>
+              <% }) %>
             </select>
           </div>
           <div class="mb-3">
             <label for="taskWeek" class="form-label">Semana</label>
             <select class="form-select" id="taskWeek" required>
               <option value="">Selecione uma semana</option>
+              <% weeksData.forEach(week => { %>
+                <option value="<%= week.id %>">Semana <%= week.number %></option>
+              <% }) %>
             </select>
           </div>
           <div class="mb-3">
@@ -140,9 +179,69 @@
 
 <script>
   $(function() {
-    $('#taskForm').on('submit', function(e) {
+    const apiBase = (window.API_URL || '').replace(/\/$/, '');
+    const projectId = '<%= currentProjectId %>';
+
+    const applyFilters = () => {
+      const devFilter = $('#filterDev').val();
+      const weekFilter = $('#filterWeek').val();
+      const scoreFilter = $('#filterScore').val();
+
+      $('#tasksTableBody tr').not('.empty-row').each(function() {
+        const row = $(this);
+        const matchesDev = !devFilter || row.data('dev-id').toString() === devFilter.toString();
+        const matchesWeek = !weekFilter || row.data('week-id').toString() === weekFilter.toString();
+        const matchesScore = !scoreFilter || row.data('points').toString() === scoreFilter.toString();
+
+        row.toggle(matchesDev && matchesWeek && matchesScore);
+      });
+    };
+
+    $('#filterDev, #filterWeek, #filterScore').on('change', applyFilters);
+
+    $('#taskForm').on('submit', async function(e) {
       e.preventDefault();
-      alert('Funcionalidade em desenvolvimento');
+
+      if (!apiBase) {
+        alert('API_URL não configurada no servidor.');
+        return;
+      }
+
+      if (!projectId) {
+        alert('Selecione um projeto antes de cadastrar tarefas.');
+        return;
+      }
+
+      const payload = {
+        title: $('#taskName').val().trim(),
+        description: $('#taskDescription').val().trim(),
+        devId: $('#taskDev').val(),
+        weekId: $('#taskWeek').val(),
+        projectId,
+        pontos: Number($('#taskScore').val()),
+        startDate: $('#taskStartDate').val(),
+        endDate: $('#taskEndDate').val(),
+      };
+
+      try {
+        const response = await fetch(`${apiBase}/tasks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao criar tarefa');
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert('Não foi possível criar a tarefa. Verifique a API e tente novamente.');
+      }
     });
+
+    applyFilters();
   });
 </script>

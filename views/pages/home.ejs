@@ -1,6 +1,32 @@
-<% var inProject = true; var backUrl = '/'; %>
+<%
+  const currentProject = typeof project !== 'undefined' ? project : null;
+  const summaryData = typeof summary !== 'undefined' && summary
+    ? summary
+    : { totalDevs: 0, totalTasks: 0, totalPoints: 0, averagePerformance: 0 };
+  const rankingData = Array.isArray(ranking) ? ranking : [];
+  const tasksData = Array.isArray(tasks) ? tasks : [];
+  const homeActionsBase = typeof projectId !== 'undefined' && projectId ? `/project/${projectId}` : '';
+  const resumeHref = homeActionsBase || '/home';
+  const metricsHref = homeActionsBase ? `${homeActionsBase}/metrics` : '/metrics';
+  const tasksHref = homeActionsBase ? `${homeActionsBase}/tasks` : '/tasks';
+%>
 
 <div class="container-lg">
+  <% if (currentProject) { %>
+    <div class="alert alert-primary border-0 mb-4 shadow-sm">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h5 class="mb-1"><%= currentProject.name %></h5>
+          <p class="mb-0"><%= currentProject.description || 'Sem descrição cadastrada para este projeto.' %></p>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="<%= resumeHref %>">Resumo</a>
+          <a class="btn btn-sm btn-outline-primary" href="<%= metricsHref %>">Métricas</a>
+          <a class="btn btn-sm btn-outline-primary" href="<%= tasksHref %>">Tarefas</a>
+        </div>
+      </div>
+    </div>
+  <% } %>
 
   <div class="row g-3 mb-4">
     <div class="col-md-3">
@@ -9,7 +35,7 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <p class="card-text text-muted small">Total de Devs</p>
-              <h3 class="h2 mb-0">0</h3>
+              <h3 class="h2 mb-0"><%= summaryData.totalDevs || 0 %></h3>
             </div>
             <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
           </div>
@@ -23,7 +49,7 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <p class="card-text text-muted small">Total de Tarefas</p>
-              <h3 class="h2 mb-0">0</h3>
+              <h3 class="h2 mb-0"><%= summaryData.totalTasks || 0 %></h3>
             </div>
             <i class="bi bi-list-check text-success" style="font-size: 2rem;"></i>
           </div>
@@ -37,7 +63,7 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <p class="card-text text-muted small">Total de Pontos</p>
-              <h3 class="h2 mb-0">0</h3>
+              <h3 class="h2 mb-0"><%= summaryData.totalPoints || 0 %></h3>
             </div>
             <i class="bi bi-star-fill text-warning" style="font-size: 2rem;"></i>
           </div>
@@ -51,7 +77,7 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <p class="card-text text-muted small">Aproveitamento Médio</p>
-              <h3 class="h2 mb-0">0%</h3>
+              <h3 class="h2 mb-0"><%= Math.round(summaryData.averagePerformance || 0) %>%</h3>
             </div>
             <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
           </div>
@@ -64,7 +90,37 @@
     <div class="tab-pane fade show active" id="resume" role="tabpanel">
       <div class="card">
         <div class="card-body">
-          <p class="text-muted">Conteúdo do resumo será carregado aqui...</p>
+          <% if (tasksData.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tarefa</th>
+                    <th>Dev</th>
+                    <th>Pontos</th>
+                    <th>Semana</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tasksData.slice(0, 5).forEach(task => { %>
+                    <tr>
+                      <td>
+                        <strong><%= task.title %></strong>
+                        <% if (task.description) { %>
+                          <div class="text-muted small"><%= task.description %></div>
+                        <% } %>
+                      </td>
+                      <td><%= task.devName || 'Sem vínculo' %></td>
+                      <td><%= task.points || 0 %></td>
+                      <td><%= task.weekNumber || '-' %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-muted mb-0">Nenhuma tarefa disponível para resumir ainda.</p>
+          <% } %>
         </div>
       </div>
     </div>
@@ -72,7 +128,30 @@
     <div class="tab-pane fade" id="devs" role="tabpanel">
       <div class="card">
         <div class="card-body">
-          <p class="text-muted">Aba de desenvolvedores será carregada aqui...</p>
+          <% if (Array.isArray(devs) && devs.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th>E-mail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% devs.slice(0, 5).forEach(dev => { %>
+                    <tr>
+                      <td><%= dev.name %></td>
+                      <td><%= dev.role %></td>
+                      <td><%= dev.email || '-' %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-muted mb-0">Nenhum desenvolvedor disponível ainda.</p>
+          <% } %>
         </div>
       </div>
     </div>
@@ -80,7 +159,21 @@
     <div class="tab-pane fade" id="tasks" role="tabpanel">
       <div class="card">
         <div class="card-body">
-          <p class="text-muted">Aba de tarefas será carregada aqui...</p>
+          <% if (tasksData.length > 0) { %>
+            <ul class="list-group list-group-flush">
+              <% tasksData.slice(0, 5).forEach(task => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong><%= task.title %></strong>
+                    <div class="text-muted small"><%= task.devName || 'Sem vínculo' %></div>
+                  </div>
+                  <span class="badge bg-primary rounded-pill"><%= task.points || 0 %> pts</span>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="text-muted mb-0">Nenhuma tarefa cadastrada para este contexto.</p>
+          <% } %>
         </div>
       </div>
     </div>
@@ -88,7 +181,32 @@
     <div class="tab-pane fade" id="metrics" role="tabpanel">
       <div class="card">
         <div class="card-body">
-          <p class="text-muted">Aba de métricas será carregada aqui...</p>
+          <% if (rankingData.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Posição</th>
+                    <th>Nome</th>
+                    <th>Pontos</th>
+                    <th>Aproveitamento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% rankingData.slice(0, 5).forEach((item, index) => { %>
+                    <tr>
+                      <td><%= index + 1 %></td>
+                      <td><%= item.name %></td>
+                      <td><%= item.totalPoints || 0 %></td>
+                      <td><%= Math.round(item.performance || 0) %>%</td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-muted mb-0">As métricas aparecem aqui quando a API retornar o ranking do projeto.</p>
+          <% } %>
         </div>
       </div>
     </div>
@@ -96,7 +214,7 @@
     <div class="tab-pane fade" id="settings" role="tabpanel">
       <div class="card">
         <div class="card-body">
-          <p class="text-muted">Aba de configurações será carregada aqui...</p>
+          <p class="text-muted mb-0">As configurações ficam agrupadas nesta área, mas a navegação já preserva o contexto do projeto.</p>
         </div>
       </div>
     </div>

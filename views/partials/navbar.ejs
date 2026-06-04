@@ -1,28 +1,37 @@
+<%
+  const projectBaseUrl = typeof projectId !== 'undefined' && projectId ? `/project/${projectId}` : '';
+  const homeHref = projectBaseUrl || '/home';
+  const devsHref = projectBaseUrl ? `${projectBaseUrl}/devs` : '/devs';
+  const tasksHref = projectBaseUrl ? `${projectBaseUrl}/tasks` : '/tasks';
+  const metricsHref = projectBaseUrl ? `${projectBaseUrl}/metrics` : '/metrics';
+  const settingsHref = projectBaseUrl ? `${projectBaseUrl}/settings` : '/settings';
+%>
+
 <nav class="navbar navbar-tabs bg-light border-bottom">
   <div class="container-lg">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <a class="nav-link active" href="/home" id="resume-tab" role="tab">
+        <a class="nav-link active" href="<%= homeHref %>" id="resume-tab" role="tab">
           <i class="bi bi-speedometer2"></i> Resumo
         </a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" href="/devs" id="devs-tab" role="tab">
+        <a class="nav-link" href="<%= devsHref %>" id="devs-tab" role="tab">
           <i class="bi bi-people"></i> Devs
         </a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" href="/tasks" id="tasks-tab" role="tab">
+        <a class="nav-link" href="<%= tasksHref %>" id="tasks-tab" role="tab">
           <i class="bi bi-list-check"></i> Tarefas
         </a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" href="/metrics" id="metrics-tab" role="tab">
+        <a class="nav-link" href="<%= metricsHref %>" id="metrics-tab" role="tab">
           <i class="bi bi-bar-chart"></i> Métricas
         </a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" href="/settings" id="settings-tab" role="tab">
+        <a class="nav-link" href="<%= settingsHref %>" id="settings-tab" role="tab">
           <i class="bi bi-gear"></i> Configurações
         </a>
       </li>

@@ -1,9 +1,14 @@
-<% var inProject = true; var backUrl = '/'; %>
+<%
+  const devsData = Array.isArray(devs) ? devs : [];
+  const currentProjectId = typeof projectId !== 'undefined' && projectId ? projectId : '';
+%>
 
 <div class="container-lg">
   <div class="row align-items-center mb-4">
     <div class="col">
-      <!-- Título renderizado pelo layout -->
+      <% if (!currentProjectId) { %>
+        <div class="alert alert-warning mb-0">Selecione um projeto para cadastrar desenvolvedores com vínculo correto.</div>
+      <% } %>
     </div>
     <div class="col-auto">
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#devModal">
@@ -25,11 +30,25 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-              <i class="bi bi-inbox"></i> Nenhum desenvolvedor cadastrado
-            </td>
-          </tr>
+          <% if (devsData.length > 0) { %>
+            <% devsData.forEach(dev => { %>
+              <tr>
+                <td><%= dev.name %></td>
+                <td><%= dev.role %></td>
+                <td><%= dev.email || '-' %></td>
+                <td><%= dev.startDate ? new Date(dev.startDate).toLocaleDateString('pt-BR') : '-' %></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Editar</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-inbox"></i> Nenhum desenvolvedor cadastrado
+              </td>
+            </tr>
+          <% } %>
         </tbody>
       </table>
     </div>
@@ -96,9 +115,47 @@
 
 <script>
   $(function() {
-    $('#devForm').on('submit', function(e) {
+    const apiBase = (window.API_URL || '').replace(/\/$/, '');
+    const projectId = '<%= currentProjectId %>';
+
+    $('#devForm').on('submit', async function(e) {
       e.preventDefault();
-      alert('Funcionalidade em desenvolvimento');
+
+      if (!apiBase) {
+        alert('API_URL não configurada no servidor.');
+        return;
+      }
+
+      if (!projectId) {
+        alert('Selecione um projeto antes de cadastrar desenvolvedores.');
+        return;
+      }
+
+      const payload = {
+        name: $('#devName').val().trim(),
+        role: $('#devRole').val().trim(),
+        email: $('#devEmail').val().trim(),
+        startDate: $('#devStartDate').val(),
+        projectId,
+      };
+
+      try {
+        const response = await fetch(`${apiBase}/devs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao criar dev');
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert('Não foi possível criar o desenvolvedor. Verifique a API e tente novamente.');
+      }
     });
   });
 </script>
