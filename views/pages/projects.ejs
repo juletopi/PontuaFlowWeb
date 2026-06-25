@@ -11,28 +11,43 @@
     <div class="row g-4">
       <% projects.forEach(project => { %>
         <div class="col-md-6 col-lg-4">
-          <a class="project-link" href="/project/<%= project.id %>" aria-label="Acessar projeto <%= project.name %>">
-            <div class="card project-card h-100 cursor-pointer">
+          <div class="card project-card h-100 cursor-pointer">
+            <a class="project-link flex-grow-1" href="/project/<%= project.id %>" aria-label="Acessar projeto <%= project.name %>">
               <div class="card-img-top project-image" style="background-color: var(--primary-color);">
-                <% if (project.photo) { %>
-                  <img src="/images/<%= project.photo %>" alt="<%= project.name %>">
-                <% } else { %>
-                  <div class="d-flex align-items-center justify-content-center h-100">
-                    <i class="bi bi-folder-fill text-white" style="font-size: 3rem;"></i>
-                  </div>
-                <% } %>
+                <div class="d-flex align-items-center justify-content-center h-100">
+                  <i class="bi bi-folder-fill text-white" style="font-size: 3rem;"></i>
+                </div>
               </div>
               <div class="card-body">
                 <h5 class="card-title"><%= project.name %></h5>
                 <p class="card-text text-muted"><%= project.description || 'Sem descrição' %></p>
               </div>
-              <div class="card-footer bg-transparent border-top">
-                <small class="text-muted">
-                  <i class="bi bi-calendar-event"></i> Criado em <%= new Date(project.createdAt).toLocaleDateString('pt-BR') %>
-                </small>
+            </a>
+            <div class="card-footer bg-transparent border-top d-flex align-items-center justify-content-between gap-2">
+              <small class="text-muted">
+                <i class="bi bi-calendar-event"></i> Criado em <%= new Date(project.createdAt).toLocaleDateString('pt-BR') %>
+              </small>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-sm btn-outline-secondary edit-project-btn"
+                  type="button"
+                  data-project-id="<%= project.id %>"
+                  data-project-name="<%= project.name %>"
+                  data-project-description="<%= project.description || '' %>"
+                >
+                  Editar
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger delete-project-btn"
+                  type="button"
+                  data-project-id="<%= project.id %>"
+                  data-project-name="<%= project.name %>"
+                >
+                  Excluir
+                </button>
               </div>
             </div>
-          </a>
+          </div>
         </div>
       <% }) %>
     </div>
@@ -43,12 +58,31 @@
   <% } %>
 </div>
 
+<div class="modal fade" id="projectDeleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Projeto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Tem certeza que deseja excluir este projeto?</p>
+        <p class="fw-semibold mb-0" id="projectDeleteLabel"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmProjectDeleteButton">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal novo projeto -->
 <div class="modal fade" id="projectModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Novo Projeto</h5>
+        <h5 class="modal-title" id="projectModalTitle">Novo Projeto</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="projectForm">
@@ -61,14 +95,10 @@
             <label for="projectDescription" class="form-label">Descrição (opcional)</label>
             <textarea class="form-control" id="projectDescription" rows="3"></textarea>
           </div>
-          <div class="mb-3">
-            <label for="projectPhoto" class="form-label">Foto/Avatar (opcional)</label>
-            <input type="file" class="form-control" id="projectPhoto" accept="image/*">
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Criar Projeto</button>
+          <button type="submit" class="btn btn-primary" id="projectSubmitButton">Criar Projeto</button>
         </div>
       </form>
     </div>
@@ -77,30 +107,101 @@
 
 <script>
   $(function() {
-    const apiBase = (window.API_URL || '').replace(/\/$/, '');
+    const projectModalElement = document.getElementById('projectModal');
+    const projectModal = bootstrap.Modal.getOrCreateInstance(projectModalElement);
+    const projectDeleteModalElement = document.getElementById('projectDeleteModal');
+    const projectDeleteModal = bootstrap.Modal.getOrCreateInstance(projectDeleteModalElement);
+    let editingProjectId = null;
+    let deletingProjectId = null;
+
+    const readApiError = async (response) => {
+      try {
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          return data.detail || data.title || data.message || JSON.stringify(data);
+        }
+
+        const text = await response.text();
+        return text || 'Falha desconhecida na API';
+      } catch {
+        return 'Falha desconhecida na API';
+      }
+    };
+
+    const resetProjectForm = () => {
+      editingProjectId = null;
+      $('#projectModalTitle').text('Novo Projeto');
+      $('#projectSubmitButton').text('Criar Projeto');
+      $('#projectForm')[0].reset();
+    };
+
+    $('.edit-project-btn').on('click', function() {
+      const button = $(this);
+
+      editingProjectId = button.data('project-id');
+
+      $('#projectModalTitle').text('Editar Projeto');
+      $('#projectSubmitButton').text('Salvar Alterações');
+      $('#projectName').val(button.data('project-name') || '');
+      $('#projectDescription').val(button.data('project-description') || '');
+      projectModal.show();
+    });
+
+    $('.delete-project-btn').on('click', function() {
+      const button = $(this);
+      deletingProjectId = button.data('project-id');
+      $('#projectDeleteLabel').text(button.data('project-name') || 'Projeto selecionado');
+      projectDeleteModal.show();
+    });
+
+    $('#confirmProjectDeleteButton').on('click', async function() {
+      if (!deletingProjectId) {
+        return;
+      }
+
+      const submitButton = $(this);
+      const url = `/api/projects/${deletingProjectId}`;
+
+      submitButton.prop('disabled', true);
+
+      try {
+        const response = await fetch(url, { method: 'DELETE' });
+
+        if (!response.ok) {
+          throw new Error(await readApiError(response));
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert(`Não foi possível excluir o projeto. ${error.message || 'Verifique a API e tente novamente.'}`);
+      } finally {
+        submitButton.prop('disabled', false);
+      }
+    });
+
+    $('#projectModal').on('hidden.bs.modal', resetProjectForm);
+    $('#projectDeleteModal').on('hidden.bs.modal', function() {
+      deletingProjectId = null;
+      $('#projectDeleteLabel').text('');
+    });
 
     $('#projectForm').on('submit', async function(e) {
       e.preventDefault();
 
-      if (!apiBase) {
-        alert('API_URL não configurada no servidor.');
-        return;
-      }
-
       const payload = {
-        name: $('#projectName').val().trim(),
-        description: $('#projectDescription').val().trim(),
+        ...(editingProjectId ? { Id: Number(editingProjectId) } : {}),
+        Nome: $('#projectName').val().trim(),
+        Descricao: $('#projectDescription').val().trim() || null,
       };
 
-      const photoInput = $('#projectPhoto')[0];
-
-      if (photoInput && photoInput.files && photoInput.files.length > 0) {
-        payload.photo = photoInput.files[0].name;
-      }
+      const method = editingProjectId ? 'PUT' : 'POST';
+      const url = editingProjectId ? `/api/projects/${editingProjectId}` : '/api/projects';
 
       try {
-        const response = await fetch(`${apiBase}/projects`, {
-          method: 'POST',
+        const response = await fetch(url, {
+          method,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -108,12 +209,12 @@
         });
 
         if (!response.ok) {
-          throw new Error('Falha ao criar projeto');
+          throw new Error(await readApiError(response));
         }
 
         window.location.reload();
       } catch (error) {
-        alert('Não foi possível criar o projeto. Verifique a API e tente novamente.');
+        alert(`Não foi possível salvar o projeto. ${error.message || 'Verifique a API e tente novamente.'}`);
       }
     });
   });

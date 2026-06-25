@@ -3,6 +3,8 @@
   const devsData = Array.isArray(devs) ? devs : [];
   const weeksData = Array.isArray(weeks) ? weeks : [];
   const currentProjectId = typeof projectId !== 'undefined' && projectId ? projectId : '';
+  const initialWeekNumber = weeksData.length > 0 ? Math.max(...weeksData.map(week => Number(week.number) || 0)) + 1 : 1;
+  const weekNumbers = weeksData.map(week => Number(week.number) || 0);
 %>
 
 <div class="container-lg">
@@ -10,41 +12,24 @@
     <div class="col">
       <% if (!currentProjectId) { %>
         <div class="alert alert-warning mb-0">Selecione um projeto para criar tarefas vinculadas a devs e semanas.</div>
+      <% } else if (weeksData.length === 0) { %>
+        <div class="alert alert-warning mb-0 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <span>Nenhuma semana cadastrada para este projeto. Crie a Semana 1 antes de adicionar tarefas.</span>
+          <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#weekModal">
+            <i class="bi bi-calendar-plus"></i> Nova Semana
+          </button>
+        </div>
       <% } %>
     </div>
     <div class="col-auto">
+      <% if (currentProjectId) { %>
+        <button class="btn btn-outline-primary me-2" type="button" data-bs-toggle="modal" data-bs-target="#weekModal">
+          <i class="bi bi-calendar-plus"></i> Nova Semana
+        </button>
+      <% } %>
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
         <i class="bi bi-plus-circle"></i> Nova Tarefa
       </button>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      <select class="form-select" id="filterDev">
-        <option value="">Todos os Devs</option>
-        <% devsData.forEach(dev => { %>
-          <option value="<%= dev.id %>"><%= dev.name %></option>
-        <% }) %>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <select class="form-select" id="filterWeek">
-        <option value="">Todas as Semanas</option>
-        <% weeksData.forEach(week => { %>
-          <option value="<%= week.id %>">Semana <%= week.number %></option>
-        <% }) %>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <select class="form-select" id="filterScore">
-        <option value="">Todas as Pontuações</option>
-        <option value="0">0 pontos</option>
-        <option value="2">2 pontos</option>
-        <option value="3">3 pontos</option>
-        <option value="5">5 pontos</option>
-        <option value="8">8 pontos</option>
-      </select>
     </div>
   </div>
 
@@ -64,9 +49,9 @@
         <tbody id="tasksTableBody">
           <% if (tasksData.length > 0) { %>
             <% tasksData.forEach(task => { %>
-              <tr data-dev-id="<%= task.devId || '' %>" data-week-id="<%= task.weekId || '' %>" data-points="<%= task.points || 0 %>">
+              <tr>
                 <td>
-                  <strong><%= task.title %></strong>
+                  <%= task.title %>
                   <% if (task.description) { %>
                     <div class="text-muted small"><%= task.description %></div>
                   <% } %>
@@ -76,7 +61,30 @@
                 <td><%= task.points || 0 %></td>
                 <td><%= task.startDate ? new Date(task.startDate).toLocaleDateString('pt-BR') : '-' %></td>
                 <td>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Editar</button>
+                  <div class="d-flex gap-2">
+                    <button
+                      class="btn btn-sm btn-outline-secondary edit-task-btn"
+                      type="button"
+                      data-task-id="<%= task.id %>"
+                      data-task-name="<%= task.title %>"
+                      data-task-description="<%= task.description || '' %>"
+                      data-task-dev-id="<%= task.devId || '' %>"
+                      data-task-week-id="<%= task.weekId || '' %>"
+                      data-task-points="<%= task.points || 0 %>"
+                      data-task-start-date="<%= task.startDate ? String(task.startDate).slice(0, 10) : '' %>"
+                      data-task-end-date="<%= task.endDate ? String(task.endDate).slice(0, 10) : '' %>"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger delete-task-btn"
+                      type="button"
+                      data-task-id="<%= task.id %>"
+                      data-task-name="<%= task.title %>"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </td>
               </tr>
             <% }) %>
@@ -93,12 +101,65 @@
   </div>
 </div>
 
+<div class="modal fade" id="taskDeleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Tarefa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Tem certeza que deseja excluir esta tarefa?</p>
+        <p class="fw-semibold mb-0" id="taskDeleteLabel"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmTaskDeleteButton">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="existingWeekNumbersData"><%- JSON.stringify(weekNumbers) %></script>
+
+<!-- Modal nova semana -->
+<div class="modal fade" id="weekModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nova Semana</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="weekForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="weekNumber" class="form-label">Número da Semana</label>
+            <input type="number" class="form-control" id="weekNumber" min="1" value="<%= initialWeekNumber %>" required>
+          </div>
+          <div class="mb-3">
+            <label for="weekStartDate" class="form-label">Data de Início (opcional)</label>
+            <input type="date" class="form-control" id="weekStartDate">
+          </div>
+          <div class="mb-3">
+            <label for="weekEndDate" class="form-label">Data de Fim (opcional)</label>
+            <input type="date" class="form-control" id="weekEndDate">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Semana</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Modal nova tarefa -->
 <div class="modal fade" id="taskModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Nova Tarefa</h5>
+        <h5 class="modal-title" id="taskModalTitle">Nova Tarefa</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="taskForm">
@@ -128,6 +189,9 @@
                 <option value="<%= week.id %>">Semana <%= week.number %></option>
               <% }) %>
             </select>
+            <% if (weeksData.length === 0) { %>
+              <div class="form-text">Nenhuma semana cadastrada ainda. Use "Nova Semana" para criar a Semana 1.</div>
+            <% } %>
           </div>
           <div class="mb-3">
             <label for="taskScore" class="form-label">Pontuação</label>
@@ -151,7 +215,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+          <button type="submit" class="btn btn-primary" id="taskSubmitButton">Adicionar Tarefa</button>
         </div>
       </form>
     </div>
@@ -163,47 +227,155 @@
     margin-bottom: 0;
   }
 
-  .dark-mode .table-light {
-    background-color: #374151;
-  }
-
-  .dark-mode .table {
-    color: #f3f4f6;
-    border-color: #374151;
-  }
-
-  .dark-mode .table tbody tr:hover {
-    background-color: #2d3748;
-  }
 </style>
 
 <script>
   $(function() {
-    const apiBase = (window.API_URL || '').replace(/\/$/, '');
     const projectId = '<%= currentProjectId %>';
+    const existingWeekNumbers = JSON.parse($('#existingWeekNumbersData').text() || '[]');
+    const taskModalElement = document.getElementById('taskModal');
+    const taskModal = bootstrap.Modal.getOrCreateInstance(taskModalElement);
+    const taskDeleteModalElement = document.getElementById('taskDeleteModal');
+    const taskDeleteModal = bootstrap.Modal.getOrCreateInstance(taskDeleteModalElement);
+    let weekSubmitting = false;
+    let taskSubmitting = false;
+    let editingTaskId = null;
+    let deletingTaskId = null;
 
-    const applyFilters = () => {
-      const devFilter = $('#filterDev').val();
-      const weekFilter = $('#filterWeek').val();
-      const scoreFilter = $('#filterScore').val();
+    const readApiError = async (response) => {
+      try {
+        const contentType = response.headers.get('content-type') || '';
 
-      $('#tasksTableBody tr').not('.empty-row').each(function() {
-        const row = $(this);
-        const matchesDev = !devFilter || row.data('dev-id').toString() === devFilter.toString();
-        const matchesWeek = !weekFilter || row.data('week-id').toString() === weekFilter.toString();
-        const matchesScore = !scoreFilter || row.data('points').toString() === scoreFilter.toString();
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          return data.detail || data.title || data.message || JSON.stringify(data);
+        }
 
-        row.toggle(matchesDev && matchesWeek && matchesScore);
-      });
+        const text = await response.text();
+        return text || 'Falha desconhecida na API';
+      } catch {
+        return 'Falha desconhecida na API';
+      }
     };
 
-    $('#filterDev, #filterWeek, #filterScore').on('change', applyFilters);
+    const resetTaskForm = () => {
+      editingTaskId = null;
+      $('#taskModalTitle').text('Nova Tarefa');
+      $('#taskSubmitButton').text('Adicionar Tarefa');
+      $('#taskForm')[0].reset();
+    };
+
+    $('.edit-task-btn').on('click', function() {
+      const button = $(this);
+
+      editingTaskId = button.data('task-id');
+      $('#taskModalTitle').text('Editar Tarefa');
+      $('#taskSubmitButton').text('Salvar Alterações');
+      $('#taskName').val(button.data('task-name') || '');
+      $('#taskDescription').val(button.data('task-description') || '');
+      $('#taskDev').val(button.data('task-dev-id') || '');
+      $('#taskWeek').val(button.data('task-week-id') || '');
+      $('#taskScore').val(String(button.data('task-points') ?? ''));
+      $('#taskStartDate').val((button.data('task-start-date') || '').toString().slice(0, 10));
+      $('#taskEndDate').val((button.data('task-end-date') || '').toString().slice(0, 10));
+      taskModal.show();
+    });
+
+    $('.delete-task-btn').on('click', function() {
+      const button = $(this);
+      deletingTaskId = button.data('task-id');
+      $('#taskDeleteLabel').text(button.data('task-name') || 'Tarefa selecionada');
+      taskDeleteModal.show();
+    });
+
+    $('#confirmTaskDeleteButton').on('click', async function() {
+      if (!deletingTaskId) {
+        return;
+      }
+
+      const submitButton = $(this);
+      const url = `/api/projects/${projectId}/tasks/${deletingTaskId}`;
+
+      submitButton.prop('disabled', true);
+
+      try {
+        const response = await fetch(url, { method: 'DELETE' });
+
+        if (!response.ok) {
+          throw new Error(await readApiError(response));
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert(`Não foi possível excluir a tarefa. ${error.message || 'Verifique a API e tente novamente.'}`);
+      } finally {
+        submitButton.prop('disabled', false);
+      }
+    });
+
+    $('#taskModal').on('hidden.bs.modal', resetTaskForm);
+    $('#taskDeleteModal').on('hidden.bs.modal', function() {
+      deletingTaskId = null;
+      $('#taskDeleteLabel').text('');
+    });
+
+    $('#weekForm').on('submit', async function(e) {
+      e.preventDefault();
+
+      if (weekSubmitting) {
+        return;
+      }
+
+      if (!projectId) {
+        alert('Selecione um projeto antes de cadastrar semanas.');
+        return;
+      }
+
+      const requestedWeekNumber = Number($('#weekNumber').val());
+
+      if (existingWeekNumbers.includes(requestedWeekNumber)) {
+        alert(`A Semana ${requestedWeekNumber} já existe neste projeto.`);
+        return;
+      }
+
+      const payload = {
+        ProjectId: Number(projectId),
+        NumeroSemana: requestedWeekNumber,
+        DataInicio: $('#weekStartDate').val() || null,
+        DataFim: $('#weekEndDate').val() || null,
+      };
+
+      const submitButton = $('#weekForm button[type="submit"]');
+
+      weekSubmitting = true;
+      submitButton.prop('disabled', true);
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}/weeks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(await readApiError(response));
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert(`Não foi possível criar a semana. ${error.message || 'Verifique a API e tente novamente.'}`);
+      } finally {
+        weekSubmitting = false;
+        submitButton.prop('disabled', false);
+      }
+    });
 
     $('#taskForm').on('submit', async function(e) {
       e.preventDefault();
 
-      if (!apiBase) {
-        alert('API_URL não configurada no servidor.');
+      if (taskSubmitting) {
         return;
       }
 
@@ -213,19 +385,28 @@
       }
 
       const payload = {
-        title: $('#taskName').val().trim(),
-        description: $('#taskDescription').val().trim(),
-        devId: $('#taskDev').val(),
-        weekId: $('#taskWeek').val(),
-        projectId,
-        pontos: Number($('#taskScore').val()),
-        startDate: $('#taskStartDate').val(),
-        endDate: $('#taskEndDate').val(),
+        ...(editingTaskId ? { Id: Number(editingTaskId) } : {}),
+        ProjectId: Number(projectId),
+        DevId: Number($('#taskDev').val()),
+        WeekId: Number($('#taskWeek').val()),
+        NomeTarefa: $('#taskName').val().trim(),
+        Descricao: $('#taskDescription').val().trim() || null,
+        Pontuacao: Number($('#taskScore').val()),
+        DataInicio: $('#taskStartDate').val(),
+        DataFim: $('#taskEndDate').val() || null,
       };
 
+      const method = editingTaskId ? 'PUT' : 'POST';
+      const url = editingTaskId ? `/api/projects/${projectId}/tasks/${editingTaskId}` : `/api/projects/${projectId}/tasks`;
+
+      const submitButton = $('#taskForm button[type="submit"]');
+
+      taskSubmitting = true;
+      submitButton.prop('disabled', true);
+
       try {
-        const response = await fetch(`${apiBase}/tasks`, {
-          method: 'POST',
+        const response = await fetch(url, {
+          method,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -233,15 +414,17 @@
         });
 
         if (!response.ok) {
-          throw new Error('Falha ao criar tarefa');
+          throw new Error(await readApiError(response));
         }
 
         window.location.reload();
       } catch (error) {
-        alert('Não foi possível criar a tarefa. Verifique a API e tente novamente.');
+        alert(`Não foi possível salvar a tarefa. ${error.message || 'Verifique a API e tente novamente.'}`);
+      } finally {
+        taskSubmitting = false;
+        submitButton.prop('disabled', false);
       }
     });
 
-    applyFilters();
   });
 </script>

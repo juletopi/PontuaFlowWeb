@@ -38,7 +38,27 @@
                 <td><%= dev.email || '-' %></td>
                 <td><%= dev.startDate ? new Date(dev.startDate).toLocaleDateString('pt-BR') : '-' %></td>
                 <td>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Editar</button>
+                  <div class="d-flex gap-2">
+                    <button
+                      class="btn btn-sm btn-outline-secondary edit-dev-btn"
+                      type="button"
+                      data-dev-id="<%= dev.id %>"
+                      data-dev-name="<%= dev.name %>"
+                      data-dev-role="<%= dev.role %>"
+                      data-dev-email="<%= dev.email || '' %>"
+                      data-dev-start-date="<%= dev.startDate || '' %>"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger delete-dev-btn"
+                      type="button"
+                      data-dev-id="<%= dev.id %>"
+                      data-dev-name="<%= dev.name %>"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </td>
               </tr>
             <% }) %>
@@ -55,11 +75,30 @@
   </div>
 </div>
 
+<div class="modal fade" id="devDeleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Desenvolvedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Tem certeza que deseja excluir este desenvolvedor?</p>
+        <p class="fw-semibold mb-0" id="devDeleteLabel"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDevDeleteButton">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="devModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Novo Desenvolvedor</h5>
+        <h5 class="modal-title" id="devModalTitle">Novo Desenvolvedor</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="devForm">
@@ -80,14 +119,10 @@
             <label for="devStartDate" class="form-label">Data de Início (opcional)</label>
             <input type="date" class="form-control" id="devStartDate">
           </div>
-          <div class="mb-3">
-            <label for="devAvatar" class="form-label">Avatar (opcional)</label>
-            <input type="file" class="form-control" id="devAvatar" accept="image/*">
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Adicionar Dev</button>
+          <button type="submit" class="btn btn-primary" id="devSubmitButton">Adicionar Dev</button>
         </div>
       </form>
     </div>
@@ -99,32 +134,95 @@
     margin-bottom: 0;
   }
 
-  .dark-mode .table-light {
-    background-color: #374151;
-  }
-
-  .dark-mode .table {
-    color: #f3f4f6;
-    border-color: #374151;
-  }
-
-  .dark-mode .table tbody tr:hover {
-    background-color: #2d3748;
-  }
 </style>
 
 <script>
   $(function() {
-    const apiBase = (window.API_URL || '').replace(/\/$/, '');
     const projectId = '<%= currentProjectId %>';
+    const devModalElement = document.getElementById('devModal');
+    const devModal = bootstrap.Modal.getOrCreateInstance(devModalElement);
+    const devDeleteModalElement = document.getElementById('devDeleteModal');
+    const devDeleteModal = bootstrap.Modal.getOrCreateInstance(devDeleteModalElement);
+    let editingDevId = null;
+    let deletingDevId = null;
+
+    const readApiError = async (response) => {
+      try {
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          return data.detail || data.title || data.message || JSON.stringify(data);
+        }
+
+        const text = await response.text();
+        return text || 'Falha desconhecida na API';
+      } catch {
+        return 'Falha desconhecida na API';
+      }
+    };
+
+    const resetDevForm = () => {
+      editingDevId = null;
+      $('#devModalTitle').text('Novo Desenvolvedor');
+      $('#devSubmitButton').text('Adicionar Dev');
+      $('#devForm')[0].reset();
+    };
+
+    $('.edit-dev-btn').on('click', function() {
+      const button = $(this);
+
+      editingDevId = button.data('dev-id');
+
+      $('#devModalTitle').text('Editar Desenvolvedor');
+      $('#devSubmitButton').text('Salvar Alterações');
+      $('#devName').val(button.data('dev-name') || '');
+      $('#devRole').val(button.data('dev-role') || '');
+      $('#devEmail').val(button.data('dev-email') || '');
+      $('#devStartDate').val((button.data('dev-start-date') || '').toString().slice(0, 10));
+      devModal.show();
+    });
+
+    $('.delete-dev-btn').on('click', function() {
+      const button = $(this);
+      deletingDevId = button.data('dev-id');
+      $('#devDeleteLabel').text(button.data('dev-name') || 'Desenvolvedor selecionado');
+      devDeleteModal.show();
+    });
+
+    $('#confirmDevDeleteButton').on('click', async function() {
+      if (!deletingDevId) {
+        return;
+      }
+
+      const submitButton = $(this);
+      const url = `/api/projects/${projectId}/devs/${deletingDevId}`;
+
+      submitButton.prop('disabled', true);
+
+      try {
+        const response = await fetch(url, { method: 'DELETE' });
+
+        if (!response.ok) {
+          throw new Error(await readApiError(response));
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert(`Não foi possível excluir o desenvolvedor. ${error.message || 'Verifique a API e tente novamente.'}`);
+      } finally {
+        submitButton.prop('disabled', false);
+      }
+    });
+
+    $('#devModal').on('hidden.bs.modal', resetDevForm);
+    $('#devDeleteModal').on('hidden.bs.modal', function() {
+      deletingDevId = null;
+      $('#devDeleteLabel').text('');
+    });
 
     $('#devForm').on('submit', async function(e) {
       e.preventDefault();
-
-      if (!apiBase) {
-        alert('API_URL não configurada no servidor.');
-        return;
-      }
 
       if (!projectId) {
         alert('Selecione um projeto antes de cadastrar desenvolvedores.');
@@ -132,16 +230,20 @@
       }
 
       const payload = {
-        name: $('#devName').val().trim(),
-        role: $('#devRole').val().trim(),
-        email: $('#devEmail').val().trim(),
-        startDate: $('#devStartDate').val(),
-        projectId,
+        ...(editingDevId ? { Id: Number(editingDevId) } : {}),
+        ProjectId: Number(projectId),
+        Nome: $('#devName').val().trim(),
+        Cargo: $('#devRole').val().trim(),
+        Email: $('#devEmail').val().trim() || null,
+        DataInicio: $('#devStartDate').val() || null,
       };
 
+      const method = editingDevId ? 'PUT' : 'POST';
+      const url = editingDevId ? `/api/projects/${projectId}/devs/${editingDevId}` : `/api/projects/${projectId}/devs`;
+
       try {
-        const response = await fetch(`${apiBase}/devs`, {
-          method: 'POST',
+        const response = await fetch(url, {
+          method,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -149,12 +251,12 @@
         });
 
         if (!response.ok) {
-          throw new Error('Falha ao criar dev');
+          throw new Error(await readApiError(response));
         }
 
         window.location.reload();
       } catch (error) {
-        alert('Não foi possível criar o desenvolvedor. Verifique a API e tente novamente.');
+        alert(`Não foi possível salvar o desenvolvedor. ${error.message || 'Verifique a API e tente novamente.'}`);
       }
     });
   });
