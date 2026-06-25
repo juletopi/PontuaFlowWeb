@@ -70,6 +70,42 @@ O backend de persistência e API pode ser a **[PontuaFlow API](https://github.co
   <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
 </div>
 
+## Estrutura do projeto
+
+```text
+PontuaFlowWeb/
+├── public/               # Arquivos estáticos públicos servidos pela aplicação
+│   ├── fonts/
+│   └── images/
+├── src/
+│   ├── app.controller.ts # Controlador principal responsável pela renderização das páginas
+│   ├── app.module.ts     # Módulo raiz com a configuração da aplicação
+│   ├── api-proxy.controller.ts # Proxy HTTP para encaminhar ações para a API principal
+│   └── main.ts           # Ponto de entrada da aplicação web
+├── views/
+│   ├── layouts/          # Layout base compartilhado entre as páginas
+│   │   └── layout.ejs    # Estrutura principal com header, conteúdo e scripts globais
+│   ├── pages/            # Páginas da interface web
+│   │   ├── devs.ejs
+│   │   ├── home.ejs
+│   │   ├── metrics.ejs
+│   │   ├── projects.ejs
+│   │   ├── settings.ejs
+│   │   └── tasks.ejs
+│   └── partials/         # Partes reutilizáveis do layout
+│       ├── footer.ejs
+│       ├── header.ejs
+│       └── navbar.ejs
+├── README.md
+├── package.json
+├── nest-cli.json
+└── tsconfig.json
+```
+
+<div align="left">
+  <h6><a href="#pontuaflow-web"> Voltar para o início ↺</a></h6>
+</div>
+
 ## Instalação
 
 ### Iniciando o projeto
