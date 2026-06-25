@@ -9,7 +9,7 @@ export class AppController {
     const projects = await this.loadProjects();
 
     return {
-      title: 'Projetos - PontuaFlow',
+      title: 'Projetos',
       projects,
     };
   }
@@ -24,7 +24,7 @@ export class AppController {
     ]);
 
     return {
-      title: 'Visão do Projeto - PontuaFlow',
+      title: 'Visão do Projeto',
       breadcrumb: 'Resumo geral do projeto',
       backUrl: '/',
       inProject: true,
@@ -41,7 +41,7 @@ export class AppController {
     const bundle = await this.loadProjectBundle(id);
 
     return {
-      title: `Visão do Projeto #${id} - PontuaFlow`,
+      title: `Visão do Projeto #${id}`,
       breadcrumb: `Resumo geral do projeto #${id}`,
       backUrl: '/',
       inProject: true,
@@ -56,7 +56,7 @@ export class AppController {
     const devs = await this.loadDevs();
 
     return {
-      title: 'Desenvolvedores - PontuaFlow',
+      title: 'Desenvolvedores',
       breadcrumb: 'Lista de desenvolvedores',
       backUrl: '/home',
       inProject: true,
@@ -70,7 +70,7 @@ export class AppController {
     const bundle = await this.loadProjectBundle(id);
 
     return {
-      title: `Desenvolvedores do Projeto #${id} - PontuaFlow`,
+      title: `Desenvolvedores do Projeto #${id}`,
       breadcrumb: `Desenvolvedores do projeto #${id}`,
       backUrl: `/project/${id}`,
       inProject: true,
@@ -89,7 +89,7 @@ export class AppController {
     ]);
 
     return {
-      title: 'Tarefas - PontuaFlow',
+      title: 'Tarefas',
       breadcrumb: 'Lista de tarefas',
       backUrl: '/home',
       inProject: true,
@@ -105,7 +105,7 @@ export class AppController {
     const bundle = await this.loadProjectBundle(id);
 
     return {
-      title: `Tarefas do Projeto #${id} - PontuaFlow`,
+      title: `Tarefas do Projeto #${id}`,
       breadcrumb: `Tarefas do projeto #${id}`,
       backUrl: `/project/${id}`,
       inProject: true,
@@ -124,7 +124,7 @@ export class AppController {
     ]);
 
     return {
-      title: 'Métricas - PontuaFlow',
+      title: 'Métricas',
       breadcrumb: 'Métricas do projeto',
       backUrl: '/home',
       inProject: true,
@@ -141,7 +141,7 @@ export class AppController {
     const bundle = await this.loadProjectBundle(id);
 
     return {
-      title: `Métricas do Projeto #${id} - PontuaFlow`,
+      title: `Métricas do Projeto #${id}`,
       breadcrumb: `Métricas do projeto #${id}`,
       backUrl: `/project/${id}`,
       inProject: true,
@@ -154,8 +154,8 @@ export class AppController {
   @Render('pages/settings')
   async getSettings() {
     return {
-      title: 'Configurações - PontuaFlow',
-      breadcrumb: 'Ajustes do projeto',
+      title: 'Configurações',
+      breadcrumb: 'Ajustes do projeto e sistema',
       backUrl: '/home',
       inProject: true,
       projects: await this.loadProjects(),
@@ -185,7 +185,6 @@ export class AppController {
       id: project.id ?? project.Id,
       name: project.name ?? project.Nome ?? project.nome ?? 'Sem nome',
       description: project.description ?? project.Descricao ?? project.descricao ?? '',
-      photo: project.photo ?? project.Foto ?? project.foto ?? '',
       createdAt: project.createdAt ?? project.CreatedAt ?? project.created_at ?? new Date().toISOString(),
     }));
   }
@@ -199,14 +198,17 @@ export class AppController {
       this.loadRanking(projectId),
     ]);
 
+    const tasksWithLabels = this.enrichTasks(tasks, devs, weeks);
+    const rankingWithFallback = ranking.length > 0 ? ranking : this.buildRanking(devs, tasksWithLabels);
+
     return {
       projectId,
       project,
       devs,
       weeks,
-      tasks,
-      ranking,
-      summary: this.buildSummary({ devs, tasks, ranking }),
+      tasks: tasksWithLabels,
+      ranking: rankingWithFallback,
+      summary: this.buildSummary({ devs, tasks: tasksWithLabels, ranking: rankingWithFallback }),
     };
   }
 
@@ -231,7 +233,6 @@ export class AppController {
       id: projectData.id ?? projectData.Id ?? projectId,
       name: projectData.name ?? projectData.Nome ?? projectData.nome ?? `Projeto #${projectId}`,
       description: projectData.description ?? projectData.Descricao ?? projectData.descricao ?? '',
-      photo: projectData.photo ?? projectData.Foto ?? projectData.foto ?? '',
       createdAt: projectData.createdAt ?? projectData.CreatedAt ?? projectData.created_at ?? new Date().toISOString(),
     };
   }
@@ -257,7 +258,6 @@ export class AppController {
       role: dev.role ?? dev.cargo ?? dev.Cargo ?? dev.position ?? dev.Position ?? 'Sem cargo',
       email: dev.email ?? dev.Email ?? dev.eMail ?? dev.mail ?? '',
       startDate: dev.startDate ?? dev.StartDate ?? dev.start_date ?? dev.createdAt ?? dev.CreatedAt ?? '',
-      avatar: dev.avatar ?? dev.Avatar ?? dev.photo ?? dev.Photo ?? '',
       projectId: dev.projectId ?? dev.ProjectId ?? projectId ?? null,
     }));
   }
@@ -301,17 +301,59 @@ export class AppController {
 
     return source.map((task: AnyRecord) => ({
       id: task.id ?? task.Id,
-      title: task.title ?? task.Titulo ?? task.titulo ?? task.name ?? task.Name ?? 'Sem título',
-      description: task.description ?? task.Descricao ?? task.descricao ?? '',
+      title: task.nomeTarefa ?? task.NomeTarefa ?? task.title ?? task.Titulo ?? task.titulo ?? task.name ?? task.Name ?? 'Sem título',
+      description: task.descricao ?? task.Descricao ?? task.description ?? '',
       devId: task.devId ?? task.DevId ?? task.developerId ?? task.DeveloperId ?? null,
       weekId: task.weekId ?? task.WeekId ?? task.semanaId ?? task.SemanaId ?? null,
       projectId: task.projectId ?? task.ProjectId ?? projectId ?? null,
-      points: this.toNumber(task.points ?? task.pontos ?? task.Points ?? task.Pontos ?? 0),
-      startDate: task.startDate ?? task.StartDate ?? task.start_date ?? task.createdAt ?? task.CreatedAt ?? '',
-      endDate: task.endDate ?? task.EndDate ?? task.end_date ?? '',
-      devName: task.devName ?? task.DevName ?? task.developerName ?? task.DeveloperName ?? '',
-      weekNumber: task.weekNumber ?? task.WeekNumber ?? task.numeroSemana ?? task.numero ?? '',
+      points: this.toNumber(task.pontuacao ?? task.Pontuacao ?? task.points ?? task.pontos ?? task.Points ?? task.Pontos ?? 0),
+      startDate: task.dataInicio ?? task.DataInicio ?? task.startDate ?? task.StartDate ?? task.start_date ?? task.createdAt ?? task.CreatedAt ?? '',
+      endDate: task.dataFim ?? task.DataFim ?? task.endDate ?? task.EndDate ?? task.end_date ?? '',
+      devName: task.devName ?? task.DevName ?? task.developerName ?? task.DeveloperName ?? task.NomeDev ?? task.nomeDev ?? '',
+      weekNumber: task.weekNumber ?? task.WeekNumber ?? task.numeroSemana ?? task.NumeroSemana ?? task.numero ?? '',
     }));
+  }
+
+  private enrichTasks(tasks: AnyRecord[], devs: AnyRecord[], weeks: AnyRecord[]) {
+    const devNameById = new Map<string, string>();
+    const weekNumberById = new Map<string, string | number>();
+
+    const hasText = (value: any) => typeof value === 'string' && value.trim().length > 0;
+
+    devs.forEach((dev) => {
+      const devId = dev.id ?? dev.Id;
+      if (devId !== undefined && devId !== null) {
+        devNameById.set(String(devId), dev.name ?? dev.Nome ?? dev.nome ?? '');
+      }
+    });
+
+    weeks.forEach((week) => {
+      const weekId = week.id ?? week.Id;
+      if (weekId !== undefined && weekId !== null) {
+        weekNumberById.set(String(weekId), week.number ?? week.numeroSemana ?? week.numero ?? week.weekNumber ?? week.WeekNumber ?? '');
+      }
+    });
+
+    return tasks.map((task) => {
+      const devId = task.devId ?? task.DevId ?? task.developerId ?? task.DeveloperId ?? null;
+      const weekId = task.weekId ?? task.WeekId ?? task.semanaId ?? task.SemanaId ?? null;
+
+      return {
+        ...task,
+        devName:
+          hasText(task.devName) || hasText(task.DevName) || hasText(task.developerName) || hasText(task.DeveloperName)
+            ? task.devName ?? task.DevName ?? task.developerName ?? task.DeveloperName
+            : devId !== null && devId !== undefined
+              ? devNameById.get(String(devId)) ?? ''
+              : '',
+        weekNumber:
+          hasText(task.weekNumber) || hasText(task.WeekNumber) || hasText(task.numeroSemana) || hasText(task.NumeroSemana)
+            ? task.weekNumber ?? task.WeekNumber ?? task.numeroSemana ?? task.NumeroSemana
+            : weekId !== null && weekId !== undefined
+              ? weekNumberById.get(String(weekId)) ?? ''
+              : '',
+      };
+    });
   }
 
   private async loadRanking(projectId: string | undefined = undefined) {
@@ -320,6 +362,8 @@ export class AppController {
     }
 
     const data = await this.fetchFromCandidates([
+      `/api/projects/${projectId}/ranking`,
+      `/projects/${projectId}/ranking`,
       `/api/metrics/project/${projectId}/ranking`,
       `/metrics/project/${projectId}/ranking`,
     ]);
@@ -327,14 +371,53 @@ export class AppController {
     const source = this.getCollection(data, ['ranking', 'data', 'items']);
 
     return source.map((item: AnyRecord, index: number) => ({
-      id: item.id ?? item.Id ?? index + 1,
-      name: item.name ?? item.Nome ?? item.nome ?? item.devName ?? item.DevName ?? 'Sem nome',
-      role: item.role ?? item.cargo ?? item.Cargo ?? item.position ?? item.Position ?? '',
-      totalPoints: this.toNumber(item.totalPoints ?? item.TotalPoints ?? item.pontos ?? item.Pontos ?? item.points ?? item.Points ?? 0),
+      id: item.id ?? item.Id ?? item.devId ?? item.DevId ?? index + 1,
+      devId: item.devId ?? item.DevId ?? null,
+      name: item.nome ?? item.Nome ?? item.name ?? item.Name ?? item.devName ?? item.DevName ?? 'Sem nome',
+      role: item.cargo ?? item.Cargo ?? item.role ?? item.Role ?? item.position ?? item.Position ?? '',
+      totalPoints: this.toNumber(item.totalPontos ?? item.totalPoints ?? item.TotalPoints ?? item.pontos ?? item.Pontos ?? item.points ?? item.Points ?? 0),
       performance: this.toNumber(
-        item.performance ?? item.Performance ?? item.aproveitamento ?? item.Aproveitamento ?? item.percentage ?? item.Percentage ?? item.percentual ?? item.Percentual ?? 0,
+        item.aproveitamentoPercent ?? item.aproveitamento ?? item.Aproveitamento ?? item.performance ?? item.Performance ?? item.percentage ?? item.Percentage ?? item.percentual ?? item.Percentual ?? 0,
       ),
     }));
+  }
+
+  private buildRanking(devs: AnyRecord[], tasks: AnyRecord[]) {
+    const totalsByDevId = new Map<string, { totalPoints: number; taskCount: number }>();
+
+    tasks.forEach((task) => {
+      const devId = task.devId ?? task.DevId ?? task.developerId ?? task.DeveloperId;
+
+      if (devId === undefined || devId === null || devId === '') {
+        return;
+      }
+
+      const key = String(devId);
+      const current = totalsByDevId.get(key) ?? { totalPoints: 0, taskCount: 0 };
+
+      current.totalPoints += this.toNumber(task.points ?? task.pontos ?? task.Pontos ?? task.totalPoints ?? 0);
+      current.taskCount += 1;
+      totalsByDevId.set(key, current);
+    });
+
+    return devs
+      .map((dev: AnyRecord) => {
+        const devId = dev.id ?? dev.Id;
+        const metrics = devId !== undefined && devId !== null ? totalsByDevId.get(String(devId)) : undefined;
+        const totalPoints = metrics?.totalPoints ?? 0;
+        const taskCount = metrics?.taskCount ?? 0;
+        const performance = taskCount > 0 ? (totalPoints / (taskCount * 5)) * 100 : 0;
+
+        return {
+          id: devId,
+          devId,
+          name: dev.name ?? dev.Nome ?? dev.nome ?? 'Sem nome',
+          role: dev.role ?? dev.cargo ?? dev.Cargo ?? dev.position ?? dev.Position ?? '',
+          totalPoints,
+          performance,
+        };
+      })
+      .sort((left, right) => right.totalPoints - left.totalPoints || right.performance - left.performance);
   }
 
   private buildSummary({
@@ -348,7 +431,7 @@ export class AppController {
   }) {
     const totalPoints = tasks.reduce((sum, task) => sum + this.toNumber(task.points ?? task.pontos ?? task.totalPoints ?? 0), 0);
     const averagePerformance = ranking.length
-      ? ranking.reduce((sum, item) => sum + this.toNumber(item.performance ?? item.aproveitamento ?? item.percentage ?? 0), 0) / ranking.length
+      ? ranking.reduce((sum, item) => sum + this.toNumber(item.performance ?? item.aproveitamentoPercent ?? item.aproveitamento ?? item.percentage ?? 0), 0) / ranking.length
       : 0;
 
     return {

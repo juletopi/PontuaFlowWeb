@@ -15,8 +15,21 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.locals.API_URL = process.env.API_URL || '';
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
+  const basePort = Number(process.env.PORT || 3000);
+  let port = Number.isFinite(basePort) && basePort > 0 ? basePort : 3000;
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    try {
+      await app.listen(port);
+      break;
+    } catch (error: any) {
+      if (error?.code !== 'EADDRINUSE' || attempt === 9) {
+        throw error;
+      }
+
+      port += 1;
+    }
+  }
 
   console.log(`PontuaFlowWeb running on http://localhost:${port}`);
 }

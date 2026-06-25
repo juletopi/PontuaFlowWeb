@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ApiProxyController } from './api-proxy.controller';
 import { AppController } from './app.controller';
 
 @Module({
@@ -20,6 +21,6 @@ import { AppController } from './app.controller';
     //   synchronize: process.env.NODE_ENV !== 'production',
     // }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, ApiProxyController],
 })
 export class AppModule {}
